@@ -21,7 +21,8 @@ module.exports = {
             options: {
                 edited: false,
                 subtract_per_dart: true,
-                show_checkout_guide: true
+                show_checkout_guide: true,
+                preferred_voicepack: undefined
             },
             isAdd: true
         }
@@ -40,6 +41,7 @@ module.exports = {
         if (player.options) {
             this.state.options.subtract_per_dart = player.options.subtract_per_dart;
             this.state.options.show_checkout_guide = player.options.show_checkout_guide;
+            this.state.options.preferred_voicepack = player.options.preferred_voicepack;
         } else {
             this.state.options.subtract_per_dart = true;
             this.state.options.show_checkout_guide = true;
@@ -106,6 +108,10 @@ module.exports = {
         this.state.options.edited = true;
         this.state.options.show_checkout_guide = event.target.checked;
     },
+    preferredVoicepackChange(event) {
+        this.state.options.edited = true;
+        this.state.options.preferred_voicepack = event.target.value;
+    },
     addPlayer(event) {
         if (!this.state.first_name) {
             alert("At least first name must be specified");
@@ -126,7 +132,8 @@ module.exports = {
         if (this.state.options.edited) {
             body.options = {
                 subtract_per_dart: this.state.options.subtract_per_dart,
-                show_checkout_guide: this.state.options.show_checkout_guide
+                show_checkout_guide: this.state.options.show_checkout_guide,
+                preferred_voicepack: this.state.options.preferred_voicepack
             }
         }
         if (this.state.isAdd) {
