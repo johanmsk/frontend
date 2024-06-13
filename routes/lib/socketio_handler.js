@@ -31,6 +31,19 @@ function readFiles(src) {
     return map;
 }
 
+function getRandomForVoicepackOrDefault(map, text, preferredVoicePack) {
+    if (map[preferredVoicePack]) {
+        if (map[preferredVoicePack][text]) {
+            return map[preferredVoicePack].random(text);
+        }
+    }
+    return map['announcer'].random(text);
+}
+
+function getRandomForPlayer(map, text, player) {
+    return getRandomForVoicepackOrDefault(map, text, player.options.preferred_voicepack);
+}
+
 function readFolders(src) {
     const map = {};
     fs.readdirSync(src).forEach(folder => {
@@ -39,8 +52,22 @@ function readFolders(src) {
     return map;
 }
 
+function readWildcardFolders(src, folderCallback) {
+    const map = {};
+
+    let split = src.split('*');
+    let parentFolder = split[0];
+    let childFolder = split[1];
+    fs.readdirSync(parentFolder)
+        .filter(fileOrFolder => fs.lstatSync(`${parentFolder}${fileOrFolder}`).isDirectory())
+        .forEach(folder => {
+            map[folder] = folderCallback(`${parentFolder}${folder}${childFolder}`);
+        });
+    return map;
+}
+
 const AUDIO_NUMBERS = readFiles('public/audio/announcer/numbers');
-const AUDIO_SCORES = readFiles('public/audio/announcer/scores');
+const AUDIO_SCORES = readWildcardFolders('public/audio/*/scores', readFiles);
 const AUDIO_MARKS = readFiles('public/audio/announcer/marks');
 const AUDIO_NAMES = readFolders('public/audio/announcer/names');
 const AUDIO_SENTENCES = readFiles('public/audio/announcer/sentences');
@@ -259,7 +286,7 @@ module.exports = (io, app) => {
                                                 if (leg.visits.length === 1) {
                                                     _this.io.of('/active').emit('first_throw', { leg: leg, players: players, globalstat: globalstat });
                                                 }
-                                                announceScored(leg.visits[leg.visits.length - 1], leg.leg_type.id);
+                                                announceScored(leg.visits[leg.visits.length - 1], leg.leg_type.id, currentPlayer);
                                                 setTimeout(() => {
                                                     // There is a race between these two announcements, so delay the one slightly
                                                     announceScoreRemaining(currentPlayer);
@@ -346,7 +373,7 @@ module.exports = (io, app) => {
                     return { text: `${name}` };
                 }
 
-                function announceScored(visit, matchType) {
+                function announceScored(visit, matchType, currentPlayer) {
                     const score = visit.score;
                     const audios = [];
                     let text = `${score}`;
@@ -360,7 +387,7 @@ module.exports = (io, app) => {
                     } else if (visit.is_bust || score === 0) {
                         audios.push(AUDIO_SCORES.random('Noscore'));
                     } else {
-                        audios.push(AUDIO_SCORES.random(text));
+                        audios.push(getRandomForPlayer(AUDIO_SCORES, text, currentPlayer.player));
                     }
                     announce(text, 'score', audios);
                 }
