@@ -41,7 +41,7 @@ function getRandomForVoicepackOrDefault(map, text, preferredVoicePack) {
 }
 
 function getRandomForPlayer(map, text, player) {
-    return getRandomForVoicepackOrDefault(map, text, player.options.preferred_voicepack);
+    return getRandomForVoicepackOrDefault(map, text, player?.options?.preferred_voicepack);
 }
 
 function readFolders(src) {
