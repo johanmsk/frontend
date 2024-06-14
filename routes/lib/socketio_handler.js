@@ -32,12 +32,13 @@ function readFiles(src) {
 }
 
 function getRandomForVoicepackOrDefault(map, text, preferredVoicePack) {
+    const key = text.toString().toLowerCase();
     if (map[preferredVoicePack]) {
-        if (map[preferredVoicePack][text]) {
-            return map[preferredVoicePack].random(text);
+        if (map[preferredVoicePack][key]) {
+            return map[preferredVoicePack].random(key);
         }
     }
-    return map['announcer'].random(text);
+    return map['announcer'].random(key);
 }
 
 function getRandomForPlayer(map, text, player) {
@@ -365,11 +366,12 @@ module.exports = (io, app) => {
 
                 function getNameAnnouncement(player, type) {
                     const name = player.vocal_name === null || player.vocal_name.trim() === "" ? player.first_name : player.vocal_name;
-                    if (name.includes(".wav")) {
+                    if (name.includes(".wav") || name.includes(".mp3")) {
                         const key = player.first_name.toLowerCase().replace(" ", "");
                         if (AUDIO_NAMES[player.options.preferred_voicepack]) {
                             if (AUDIO_NAMES[player.options.preferred_voicepack][key]) {
-                                return AUDIO_NAMES[player.options.preferred_voicepack][key]?.random(type)
+                                if (AUDIO_NAMES[player.options.preferred_voicepack][key][type])
+                                    return AUDIO_NAMES[player.options.preferred_voicepack][key].random(type);
                             }
                         }
                         if (AUDIO_NAMES['announcer'][key]) {

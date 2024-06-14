@@ -57,7 +57,9 @@ module.exports = {
             document.getElementById('change-player-order').click();
         } else {
             if (this.input.leg.visits.length === 0) {
-                const currentPlayer = this.input.players[this.input.leg.current_player_id];
+                const currentPlayer =
+                    this.input.leg_players
+                        .find(legPlayer => legPlayer.player_id === this.input.leg.current_player_id)?.player;
                 setTimeout(() => {
                     this.state.socket.emit('announce', { leg_num: this.input.match.current_leg_num, player: currentPlayer, type: 'match_start' });
                 }, 900);
@@ -123,7 +125,9 @@ module.exports = {
                         // MatchType might have changed, so make sure we update it
                         this.state.matchType = leg.leg_type.id || match.match_type.id;
 
-                        const currentPlayer = this.input.players[leg.current_player_id];
+                        const currentPlayer =
+                            this.input.leg_players
+                                .find(legPlayer => legPlayer.player_id === leg.current_player_id)?.player;
                         this.state.announcedStart = false;
                         this.state.socket.emit('announce', { leg_num: match.current_leg_num, player: currentPlayer, type: 'match_start' });
 
@@ -319,7 +323,7 @@ module.exports = {
         if (e.key === 'Backspace') {
             component.removeLast();
             e.preventDefault();
-        } else if (e.key === '$' || e.key === '=') { 
+        } else if (e.key === '$' || e.key === '=') {
             this.state.keyboard.mode = this.state.keyboard.mode === "simple" ? "full" :  "simple";
             this.setStateDirty('keyboard');
             this.state.enableButtonInput = false;
